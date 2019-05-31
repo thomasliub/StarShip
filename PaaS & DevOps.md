@@ -5,9 +5,9 @@
 # 1. 企业应用平台概述
 企业应用平台由企业应用云平台(简称云平台)和车间设备平台(简称设备平台)组成。应用部署在云平台之上，和车间设备组成整个企业应用解决方案。如下图所示：
 
-![](/pics/arch-1.png)
+![](/pics/paas-devops-1.png)
 
-如图1所示，自下而上分别为设备平台，PaaS云平台，IoT物联网平台和应用层组成。本文着重讲述车间设备通用平台和PaaS平台部分，对于IoT平台，有专门的文档详细阐述。对于具体企业应用只提及，并不做详细描述。
+如图所示，自下而上分别为设备平台，PaaS云平台，IoT物联网平台和应用层组成。本文着重讲述车间设备通用平台和PaaS平台部分，对于IoT平台，有专门的文档详细阐述。对于具体企业应用只提及，并不做详细描述。
 
 对于车间设备，它可以通过MQTT向物联网平台或者应用发送异步消息，同时也可以通过HTTP REST接口访问企业云上的应用接口。对于应用可以通过订阅MQTT消息或者websocket直接获取设备通报的数据。
 
@@ -152,9 +152,10 @@ OpenResty官网: http://openresty.org/cn/
 
 ### 3.5.1 接入网关用户认证
 * 用户首次登陆访问
-<div align=center><br>
-![](http://on-img.com/chart_image/5a265c43e4b0101bd6d1885e.png)
-<br>图2. 用户首次登陆流程图</div>
+
+![](/pics/paas-devops-2.png)
+
+
     1. 用户首次访问服务
     2. 服务网关（OpenIDConnect RP client）识别用户首次访问，并redirect到用户认证服务器（OpenIDConnect OP Server)
     3. 用户认证服务器识别用户首次访问，要求用户登陆
@@ -167,9 +168,9 @@ OpenResty官网: http://openresty.org/cn/
 
 * 用户已经登陆认证服务器，首次访问其他服务
 本流程中，由于用户已经登陆过认证服务器，因次认证服务器和用户的认证过程省略掉
-<div align=center><br>
-![](http://on-img.com/chart_image/5a265c43e4b0101bd6d1885e.png)
-<br>图3. 用户已经登陆认证服务器，首次访问其他服务</div>
+
+![](/pics/paas-devops-3.png)
+
     1. 用户访问服务
     2. 服务网关识别用户首次访问，并redirect到用户认证服务器
     3. 用户认证服务器识别用户已经登陆，则直接分配授权码，并redirect请求回源服务
@@ -179,9 +180,9 @@ OpenResty官网: http://openresty.org/cn/
 
 
 * 用户在该服务拥有有效会话后的后续访问
-<div align=center><br>
-![](http://on-img.com/chart_image/5a26684fe4b0101bd6d193ea.png)
-<br>图4. 用户在该服务拥有有效会话后的后续访问</div>
+
+![](/pics/paas-devops-4.png)
+
     1. 用户访问服务，携带有效会话ID(cookie)
     2. 服务网关识别会话，向认证服务器发起访问令牌验证请求
     3. 认真服务器识别访问令牌，回复用户信息
@@ -189,9 +190,9 @@ OpenResty官网: http://openresty.org/cn/
 
 
 * 用户登出
-<div align=center><br>
-![](http://on-img.com/chart_image/5a26614de4b0dce08035f6cd.png)
-<br>图5. 用户登出</div>
+
+![](/pics/paas-devops-5.png)
+
     1. 用户向任意服务发起登出请求，携带有效会话ID(cookie)
     2. 服务网关识别并完成用户会话清除，随后redirect登出请求到认证服务器
     3. 认证服务器完成用户会话清楚，随后redirect回源服务缺省网页
@@ -212,13 +213,11 @@ OpenResty官网: http://openresty.org/cn/
 
 单点登陆服务器基于开源项目[django-oidc-provider](https://github.com/juanifioren/django-oidc-provider)，首先，实现了OpenIDConnect技术的标准框架以及流程，支持服务访问点的发现和授权码认证方式；同时扩展了用户应用授权和服务导引功能。在单点登陆服务器上，分配用户应用权限，当用户登陆后，可以根据其权限列出可以访问的企业应用。需要注意的是应用内部的子授权还由应用各自维护和控制。
 
-<br><div align=center>
-![](http://openid.net/wordpress-content/uploads/2014/02/OpenIDConnect-Map-4Feb2014.png)
-<br>图6. OpenIDConnect协议栈</div><br>
 
-<br><div align=center>
-![](http://image.beekka.com/blog/2014/bg2014051204.png)
-<br>图7. OAuth2流程图</div><br>
+![](/pics/paas-devops-6.png)
+
+
+![](/pics/paas-devops-7.png)
 
 ### 3.5.3 添加用户和用户授权
 * 用户授权批量导入
@@ -250,9 +249,10 @@ OpenIDConnect官网：[http://openid.net/connect/](http://openid.net/connect/)
 方案采用etcd+confd。etcd 是一个分布式一致性k-v存储系统作为服务注册数据中心，可用于服务注册发现与共享配置。confd用来读取etcd的服务信息并动态生成nginx的配置文件，并执行重新加载nginx进程。
 
 服务动态注册/发现流程如下图：
-<br><div align=center>
-![](https://i.imgur.com/oivCheX.png)
-<br>图8. 服务动态注册和发现</div><br>
+
+![](/pics/paas-devops-8.png)
+
+
 1. confd作为nginx代理，注册数据中心服务名称，如serivce_erp, service_oa
 2. 应用服务创建服务实例，注册服务实例；服务实例停止，数据中心注销
 3. 数据中心根据订阅信息，将服务变动通知nginx代理confd
